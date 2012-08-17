@@ -43,7 +43,7 @@ cleanup_conn(Pid) ->
   mysql_conn:stop(Pid).
 
 basics(Pid) ->
-  mysql_statement:prepare(insert_user, <<"INSERT INTO USERS (nickname) VALUES (?)">>),
+  mysql_statement:prepare(insert_user, <<"INSERT INTO users (nickname) VALUES (?)">>),
   mysql_conn:execute(Pid, insert_user, ["James"]),
   mysql_conn:execute(Pid, insert_user, ["James"]),
   {data, #mysql_result{rows=Rows}} = mysql_conn:fetch(Pid, <<"SELECT * FROM users">>),
@@ -51,7 +51,7 @@ basics(Pid) ->
    ?_assertEqual(2, length(Rows))].
 
 transaction(Pid) ->
-  mysql_statement:prepare(insert_user, <<"INSERT INTO USERS (nickname) VALUES (?)">>),
+  mysql_statement:prepare(insert_user, <<"INSERT INTO users (nickname) VALUES (?)">>),
   mysql_conn:transaction(Pid, fun() ->
     mysql_conn:execute(Pid, insert_user, ["James"]),
     mysql_conn:execute(Pid, insert_user, ["James"])
