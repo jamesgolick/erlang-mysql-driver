@@ -63,22 +63,19 @@ prepare(Name, Query) ->
 %% @spec get_prepared(Name::atom(), Version::integer()) ->
 %%   {ok, latest} | {ok, Statement::binary()} | {error, Err}
 get_prepared(Name) ->
-  gen_server:call(?MODULE, {get_prepared, Name}).
+  case ets:lookup(?TABLE, Name) of
+    [] ->
+      {error, {undefined, Name}};
+    [{Name, StatementInfo}] ->
+      {ok, StatementInfo}
+  end.
 
 %% gen_server callbacks
 
 init([TableHeir]) ->
-  EtsOptions = [set, named_table, public, {heir, TableHeir, undefined}],
+  EtsOptions = [set, named_table, public, {heir, TableHeir, undefined}, {read_concurrency, true}],
   ets:new(?TABLE, EtsOptions),
   {ok, #state{}}.
-
-handle_call({get_prepared, Name}, _From, State) ->
-  case ets:lookup(?TABLE, Name) of
-    [] ->
-      {reply, {error, {undefined, Name}}, State};
-    [{Name, StatementInfo}] ->
-      {reply, {ok, StatementInfo}, State}
-  end;
 
 handle_call({prepare, Name, Statement}, _, State) ->
   Reply = case ets:lookup(?TABLE, Name) of
