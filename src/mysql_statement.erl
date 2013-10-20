@@ -46,8 +46,16 @@ stop_and_cleanup() ->
   gen_server:call(?MODULE, stop),
   ets:delete(?TABLE).
 
-prepare(Name, Query) ->
-  gen_server:call(?MODULE, {prepare, Name, Query}).
+prepare(Name, Statement) ->
+  case ets:lookup(?TABLE, Name) of
+    [{Name, Statement}] ->
+      ok;
+    [{Name, _Other}] ->
+      {error, statement_exists};
+    [] ->
+      ets:insert(?TABLE, {Name, Statement}),
+      ok
+  end.
 
 %% @doc Get the prepared statement with the given name.
 %%
@@ -73,7 +81,7 @@ get_prepared(Name) ->
 %% gen_server callbacks
 
 init([TableHeir]) ->
-  EtsOptions = [set, named_table, public, {heir, TableHeir, undefined}, {read_concurrency, true}],
+  EtsOptions = [set, named_table, public, {heir, TableHeir, undefined}, {read_concurrency, true}, {write_concurrency, true}],
   ets:new(?TABLE, EtsOptions),
   {ok, #state{}}.
 
