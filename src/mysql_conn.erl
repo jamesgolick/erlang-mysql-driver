@@ -284,15 +284,10 @@ handle_call({fetch, Queries}, _, State) ->
   {reply, Reply, State};
 
 handle_call({execute, Name, Params}, _, State) ->
-  case sets:is_element(Name, State#state.prepares) of
-    true ->
-      {reply, do_execute1(State, Name, Params), State};
-    false ->
-      {ok, Statement} = mysql_statement:get_prepared(Name),
-      Reply = prepare_and_exec(State, Name, Statement, Params),
-      Prepares = sets:add_element(Name, State#state.prepares),
-      {reply, Reply, State#state{prepares=Prepares}}
-  end;
+  {ok, Statement} = mysql_statement:get_prepared(Name),
+  Reply = prepare_and_exec(State, Name, Statement, Params),
+  Prepares = sets:add_element(Name, State#state.prepares),
+  {reply, Reply, State#state{prepares=Prepares}};
 
 handle_call(start_transaction, _, State) ->
   {reply, start_transaction(State), State};
