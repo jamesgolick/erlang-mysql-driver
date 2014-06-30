@@ -51,7 +51,7 @@ transaction(PoolName, Fun) ->
   transaction(PoolName, Fun, ?DEFAULT_TIMEOUT).
 
 transaction(PoolName, Fun, Timeout) when is_pid(PoolName) ->
-  mysql_conn:execute(PoolName, Fun, Timeout);
+  mysql_conn:transaction(PoolName, Fun, Timeout);
 transaction(PoolName, Fun, Timeout) when is_atom(PoolName) ->
   poolboy:transaction(PoolName, fun(Worker) ->
 	transaction(Worker, Fun, Timeout)
